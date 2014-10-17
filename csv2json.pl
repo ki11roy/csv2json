@@ -155,10 +155,16 @@ sub write_json {
 
   if($compact_format)
   {
-    foreach my $d (@{$data})
+    print "[\n";
+    for(my $i= 1; $i < scalar @{$data};$i++)
     {
-      print $output to_json($d, {'utf8' => 1, 'pretty' => 0}) . "\n";
+      unless($i == 1)
+      {
+        print ",\n";
+      }
+      print $output to_json(@{$data}[$i], {'utf8' => 1, 'pretty' => 0});
     }
+    print "\n]";
   }  
   else
   {
