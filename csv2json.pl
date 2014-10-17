@@ -19,6 +19,8 @@ use Getopt::Long;
 	my $auto_group = 0;
 	my $join_data = undef;
 	my $group_with_limit = undef;
+	my $compact_format = undef;
+
 	GetOptions(
 		"--separator|s=s" => \$separator,
 		"--help|h!" => \$show_help,
@@ -27,6 +29,7 @@ use Getopt::Long;
 		"--auto-group!" => \$auto_group,
 		"--join-data=s" => \$join_data,
 		"--group-with-limit=i" => \$group_with_limit,
+		"--compact-format|c!" => \$compact_format,
 	) or show_help();
 	show_help() if $show_help;
 
@@ -57,7 +60,7 @@ use Getopt::Long;
 	if ($format eq 'csv') {
 		write_csv($data, $separator, $output);
 	} elsif ($format eq 'json') {
-		write_json($data, $output);
+		write_json($data, $output, $compact_format);
 	} elsif ($format eq 'sql') {
 		write_sql($data, $fn, $output);
 	} elsif ($format eq 'jira') {
@@ -72,7 +75,7 @@ use Getopt::Long;
 
 sub show_help {
 	print "Usage: $0 [--separator=?] [--write=json|csv|self|jira] [--trim-whitespaces] [--auto-group] ".
-		"[--join-data=file] [--group-with-limit=limit] [--help] <file>\n";
+		"[--join-data=file] [--group-with-limit=limit] [--compact-format|-c] [--help] <file>\n";
 	exit(1);
 }
 
@@ -148,15 +151,19 @@ sub guess_separator {
 }
 
 sub write_json {
-	my ($data, $output) = @_;
+	my ($data, $output, $compact_format) = @_;
 
-	print $output to_json(
-		$data, 
-		{
-			'utf8' => 1, 
-			'pretty' => 1,
-		}
-	);
+  if($compact_format)
+  {
+    foreach my $d (@{$data})
+    {
+      print $output to_json($d, {'utf8' => 1, 'pretty' => 0}) . "\n";
+    }
+  }  
+  else
+  {
+    print $output to_json($data, {'utf8' => 1, 'pretty' => 1});
+  }
 }
 
 sub write_csv {
